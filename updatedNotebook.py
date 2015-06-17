@@ -36,8 +36,8 @@ def parseFile(file = None):
                     data_flux_filter3_err = data_flux['f814w']['flux_error'],
                     )
 
-        else:
-            createPlots() 
+    else:
+        createPlots() 
 
 
 def createPlots(zValue = 1.00,
