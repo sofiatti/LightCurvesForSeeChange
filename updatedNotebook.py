@@ -1,10 +1,11 @@
-filters = ['f140w', 'f105w', 'f814w','f160w']
 import sys
-sys.path.append('/home/ubuntu/projects/classification/src/')
-%matplotlib inline
 import lightcurves
-from IPython.html.widgets import interact, FloatSliderWidget, fixed, FloatTextWidget
+import numpy as np
 from astropy.io import ascii
+from IPython.html.widgets import interact, FloatSliderWidget, fixed, 
+     FloatTextWidget
+
+filters = ['f105w', 'f140w', 'f160w','f814w']
 
 def parseFile(file = None):
     if file:
@@ -17,32 +18,29 @@ def parseFile(file = None):
             indices = [i for i, x in enumerate(my_data['band']) if x == f]
             data_flux[f]['time'] = [ my_data['mjd'][i] - t0 for i in indices ]
             data_flux[f]['flux'] = [ my_data['flux'][i] for i in indices ]
-            data_flux[f]['flux_error'] = [ my_data['flux'][i] for i in indices ]
+            data_flux[f]['flux_error'] = [ my_data['fluxerr'][i] for i in indices ]    
 
         my_dates = [ data_flux['f140w']['time'],
-                     data_flux['f105w']['time']
+                     data_flux['f105w']['time'],
                      data_flux['f814w']['time']]
         
         createPlots(zValue = params['z'],
                     x0Value = params['x0'],
                     x1Value = params['x1'],
                     cValue = params['c'],
-                    dates = my_dates,
-                    data_flux_filter1 = data_flux['f140w']['flux'],
-                    data_flux_filter1_err = data_flux['f140w']['flux_error'],
-                    data_flux_filter2 = data_flux['f105w']['flux'],
-                    data_flux_filter2_err = data_flux['f105w']['flux_error'],
-                    data_flux_filter3 = data_flux['f814w']['flux'],
-                    data_flux_filter3_err = data_flux['f814w']['flux_error'],
+                    my_dates = my_dates,
+                    data_flux_filter1 = fixed(data_flux['f140w']['flux']),
+                    data_flux_filter1_err = fixed(data_flux['f140w']['flux_error']),
+                    data_flux_filter2 = fixed(data_flux['f105w']['flux']),
+                    data_flux_filter2_err = fixed(data_flux['f105w']['flux_error']),
+                    data_flux_filter3 = fixed(data_flux['f814w']['flux']),
+                    data_flux_filter3_err = fixed(data_flux['f814w']['flux_error']),
                     )
 
     else:
-        createPlots() 
-
-
-def createPlots(zValue = 1.00,
-                x0Value = None,
+        createPlots(zValue = 1.00,
                 x1Value = 0,
+		x0Value = None,
                 cValue = 0,
                 my_dates = np.asarray([[0,32],[0,32],[0,32]]),
                 data_flux_filter1=fixed([0.0,4.93]),
@@ -50,30 +48,36 @@ def createPlots(zValue = 1.00,
                 data_flux_filter2=fixed([0.0,5.08]),
                 data_flux_filter2_err=fixed([0.2,0.2]),
                 data_flux_filter3=fixed([0,1.15]),
-                data_flux_filter3_err=fixed([0.3,0.3])):
+                data_flux_filter3_err=fixed([0.3,0.3]))
+
+def createPlots(zValue, x0Value, x1Value, cValue, my_dates,
+                data_flux_filter1, data_flux_filter1_err,
+		data_flux_filter2, data_flux_filter2_err,     
+         	data_flux_filter3, data_flux_filter3_err):
 
     if not x0Value:
-        interact(lightcurves.plot_Ia, z = FloatSliderWidget(min=0.15, max=2, step=0.01, value=zValue),
+        interact(lightcurves.plot_Ia, 
+                 data_flux_filter1=data_flux_filter1, data_flux_filter1_err=data_flux_filter1_err,
+                 data_flux_filter2=data_flux_filter2, data_flux_filter2_err=data_flux_filter2_err,
+                 data_flux_filter3=data_flux_filter3, data_flux_filter3_err=data_flux_filter3_err,
+		 z = FloatSliderWidget(min=0.15, max=2, step=0.01, value=zValue),
                  x1 = FloatSliderWidget(min=-3, max=2, step=0.1, value=x1Value),
                  c = FloatSliderWidget(min=-0.4, max=0.4, step=0.01, value=cValue),
                  filters = fixed(filters),
                  dates = fixed(my_dates),
-                 phase = FloatSliderWidget(min=-50, max=150, step=1, value=0), 
-                 data_flux_filter1, data_flux_filter1_err,
-                 data_flux_filter2, data_flux_filter2_err,
-                 data_flux_filter3, data_flux_filter3_err);
+                 phase = FloatSliderWidget(min=-50, max=150, step=1, value=0)); 
     else:
-        interact(lightcurves.plot_Ia, z = FloatSliderWidget(min=0.15, max=2, step=0.01, value=zValue),
-                 x0 = FloatSliderWidget(min=-3, max=2, step=0.1, value=x0Value),
-                 x1 = FloatSliderWidget(min=-3, max=2, step=0.1, value=x1Value),
+        interact(lightcurves.plot_Ia, 
+                 data_flux_filter1=data_flux_filter1, data_flux_filter1_err=data_flux_filter1_err,
+                 data_flux_filter2=data_flux_filter2, data_flux_filter2_err=data_flux_filter2_err,
+                 data_flux_filter3=data_flux_filter3, data_flux_filter3_err=data_flux_filter3_err,
+		 z = FloatSliderWidget(min=0.15, max=2, step=0.01, value=zValue),
+                 x0 = FloatSliderWidget(min=0.01*1e-5, max=1e-5, step=0.1*1e-5, value=x0Value),
+		 x1 = FloatSliderWidget(min=-3, max=2, step=0.1, value=x1Value),
                  c = FloatSliderWidget(min=-0.4, max=0.4, step=0.01, value=cValue),
                  filters = fixed(filters),
                  dates = fixed(my_dates),
-                 phase = FloatSliderWidget(min=-50, max=150, step=1, value=0), 
-                 data_flux_filter1, data_flux_filter1_err,
-                 data_flux_filter2, data_flux_filter2_err,
-                 data_flux_filter3, data_flux_filter3_err);
-
+                 phase = FloatSliderWidget(min=-50, max=150, step=1, value=0)); 
 
 def readCSV(file):
     my_data = ascii.read(file, comment = r'\s*@')
@@ -87,8 +91,6 @@ def readCSV(file):
     params = dict(zip(keys, values))
 
     return params, my_data
-
-parseFile()
 
 
 
